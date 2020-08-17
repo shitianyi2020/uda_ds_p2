@@ -8,6 +8,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
+from nltk.corpus import stopwords
 
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import GridSearchCV
@@ -26,11 +27,12 @@ def load_data(database_filepath):
     df = pd.read_sql('SELECT * FROM df', engine)
     X = df.message.values
     Y = df.drop(['id','message','original','genre'],axis=1).values
-    Z = data.columns.tolist()
+    Z = df.columns.tolist()
     return X, Y, Z
 
 
 def tokenize(text):
+    text = re.sub(r"[^a-zA-Z0-9]"," ", text)
     tokens = word_tokenize(text)
     lemmatizer = WordNetLemmatizer()
 
@@ -38,7 +40,8 @@ def tokenize(text):
     for tok in tokens:
         clean_tok = lemmatizer.lemmatize(tok).lower().strip()
         clean_tokens.append(clean_tok)
-
+    clean_tokens = [w for w in clean_tokens if w not in stopword.words("english")]
+    
     return clean_tokens
 
 
@@ -48,10 +51,22 @@ def build_model():
         ('tfidf', TfidfTransformer()),
         ('clf', MultiOutputClassifier(RandomForestClassifier()))
     ])
+    
+    
+    parameters = {
+        'clf__n_estimators': [50, 100, 200],
+        'clf__min_samples_split': [2, 3, 4]
+    }
+    
+    cv = GridSearchCV(pipeline, param_grid = parameters)
+
+    return cv
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    pass
+    labels = np.unique(y_pred)
+    confusion_mat = confusion_matrix(y_test, y_pred, labels=labels)
+    accuracy = (y_pred == y_test).mean()
 
 
 def save_model(model, model_filepath):
