@@ -5,6 +5,7 @@ nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger'])
 import re
 import numpy as np
 import pandas as pd
+import pickle
 from sqlalchemy import create_engine
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
@@ -64,14 +65,13 @@ def build_model():
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    labels = np.unique(y_pred)
-    confusion_mat = confusion_matrix(y_test, y_pred, labels=labels)
-    accuracy = (y_pred == y_test).mean()
+    labels = np.unique(model.predict(X_test))
+    confusion_mat = confusion_matrix(Y_test, model.predict(X_test), labels=labels)
+    accuracy = (model.predict(X_test) == Y_test).mean()
 
 
 def save_model(model, model_filepath):
-    pass
-
+    joblib.dump(model,model_filepath)
 
 def main():
     if len(sys.argv) == 3:
