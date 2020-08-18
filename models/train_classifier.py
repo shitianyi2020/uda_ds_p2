@@ -1,6 +1,6 @@
 import sys
 import nltk
-nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger'])
+nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger','stopwords'])
 
 import re
 import numpy as np
@@ -18,17 +18,16 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-from sklearn.datasets import make_multilabel_classification
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import classification_report
 
 def load_data(database_filepath):
-    engine = create_engine(database_filepath)
+    engine = create_engine('sqlite:///' + database_filepath)
     df = pd.read_sql('SELECT * FROM df', engine)
-    X = df.message.values
-    Y = df.drop(['id','message','original','genre'],axis=1).values
-    Z = df.columns.tolist()
+    X = df['message']
+    Y = df.drop(['id','message','original','genre'],axis=1)
+    Z = df.columns[4:]
     return X, Y, Z
 
 
@@ -41,7 +40,7 @@ def tokenize(text):
     for tok in tokens:
         clean_tok = lemmatizer.lemmatize(tok).lower().strip()
         clean_tokens.append(clean_tok)
-    clean_tokens = [w for w in clean_tokens if w not in stopword.words("english")]
+    clean_tokens = [w for w in clean_tokens if w not in stopwords.words("english")]
     
     return clean_tokens
 
@@ -55,23 +54,23 @@ def build_model():
     
     
     parameters = {
-        'clf__n_estimators': [50, 100, 200],
-        'clf__min_samples_split': [2, 3, 4]
+        'clf__estimator__n_estimators':[10],        
+        'clf__estimator__min_samples_split': [2, 3, 4]
     }
     
-    cv = GridSearchCV(pipeline, param_grid = parameters)
+    cv = GridSearchCV(pipeline, param_grid = parameters,
+                      scoring='f1_macro', cv=2, n_jobs=-1,verbose=3)
 
     return cv
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    labels = np.unique(model.predict(X_test))
-    confusion_mat = confusion_matrix(Y_test, model.predict(X_test), labels=labels)
-    accuracy = (model.predict(X_test) == Y_test).mean()
+    print(classification_report(Y_test, model.predict(X_test), target_names=category_names))
+    results = pd.DataFrame(columns=['Category', 'f_score', 'precision', 'recall'])
 
 
 def save_model(model, model_filepath):
-    joblib.dump(model,model_filepath)
+    pickle.dump(model,model_filepath)
 
 def main():
     if len(sys.argv) == 3:

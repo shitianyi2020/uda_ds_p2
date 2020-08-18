@@ -4,8 +4,8 @@ import numpy as np
 from sqlalchemy import create_engine
 
 def load_data(messages_filepath, categories_filepath):
-    messages = pd.read_csv(open(messages_filepath))
-    categories = pd.read_csv(open(categories_filepath))
+    messages = pd.read_csv(messages_filepath)
+    categories = pd.read_csv(categories_filepath)
     df = pd.merge(messages,categories,on='id')
     return df
 
@@ -19,6 +19,7 @@ def clean_data(df):
         categories[column] = categories[column].astype('int64')
     df.drop('categories',axis=1,inplace=True)
     df = pd.concat([df,categories],axis=1)
+    df.related[df['related'] == 2] = 1
     df = df.drop_duplicates()
     return df
     
