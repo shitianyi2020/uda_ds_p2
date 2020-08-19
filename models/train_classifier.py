@@ -70,7 +70,7 @@ def evaluate_model(model, X_test, Y_test, category_names):
 
 
 def save_model(model, model_filepath):
-    pickle.dump(model,model_filepath)
+    pickle.dump(model.best_estimator_, open(model_filepath, 'wb'))
 
 def main():
     if len(sys.argv) == 3:
