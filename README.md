@@ -4,13 +4,17 @@
 The goal of this project is to analyze disaster data from Figure Eight to build a model for an API that classifies disaster messages. The final results are shown through a web app where an emergency worker can input a new message and get classification results in several categories. The web app will also display visualizations of the data. 
 
 ### Project Components
+
 1. ETL Pipeline
+
 'process_data.py', a data cleaning pipeline that:
    * Loads the messages and categories datasets 'disaster_messages.csv' & 'disaster_categories.csv'
    * Merges the two datasets
    * Cleans the data
    * Stores data in a SQLite database 'DisasterResponse.db'
+
 2. ML Pipeline
+
 'train_classifier.py', a machine learning pipeline that:
    * Loads data from the SQLite database
    * Splits the dataset into training and test sets
@@ -18,7 +22,9 @@ The goal of this project is to analyze disaster data from Figure Eight to build 
    * Trains and tunes a model using GridSearchCV
    * Outputs results on the test set
    * Exports the final model as a pickle file 'classifier.pkl'
+
 3. Flask Web App
+
 'run.py', a process that:
    * Loads data and model
    * Builds a web framework by rendering 'go.html' & 'master.html'

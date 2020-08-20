@@ -23,6 +23,17 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import classification_report
 
 def load_data(database_filepath):
+    
+    """ 
+    Args:
+        database_filepath: The file path of the sqlite database
+        
+    Returns:
+        X: Feature data, message
+        Y: Labels, 36 categories
+        category_names: List of the category names
+    """ 
+    
     engine = create_engine('sqlite:///' + database_filepath)
     df = pd.read_sql('SELECT * FROM df', engine)
     X = df['message']
@@ -32,10 +43,22 @@ def load_data(database_filepath):
 
 
 def tokenize(text):
+    
+    """
+    Args: 
+        text: Original message
+    
+    Returns:
+        clean_tokens: clean tokens after processing by the tokenization function
+    """
+    # remove special characters
     text = re.sub(r"[^a-zA-Z0-9]"," ", text)
+    
+    # tokenize
     tokens = word_tokenize(text)
+    
+    # lemmatize and remove stopwords
     lemmatizer = WordNetLemmatizer()
-
     clean_tokens = []
     for tok in tokens:
         clean_tok = lemmatizer.lemmatize(tok).lower().strip()
@@ -46,6 +69,15 @@ def tokenize(text):
 
 
 def build_model():
+    
+    """
+    Args:
+        None
+        
+    Returns:
+        cv: Grid search model object
+    """    
+
     pipeline = Pipeline([
         ('vect', CountVectorizer(tokenizer=tokenize)),
         ('tfidf', TfidfTransformer()),
@@ -65,11 +97,33 @@ def build_model():
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
+    
+    """
+    Args:
+        model: the scikit-learn fitted model
+        X_text: The feature data for test
+        Y_test: The labels for test
+        category_names: List of the category names
+    
+    Returns:
+        None
+    """
+    
     print(classification_report(Y_test, model.predict(X_test), target_names=category_names))
     results = pd.DataFrame(columns=['Category', 'f_score', 'precision', 'recall'])
 
 
 def save_model(model, model_filepath):
+    
+    """
+    Args:
+        model: The fitted model
+        model_filepath: The file path to save the model
+    
+    Returns:
+        None
+    """    
+    
     pickle.dump(model.best_estimator_, open(model_filepath, 'wb'))
 
 def main():
