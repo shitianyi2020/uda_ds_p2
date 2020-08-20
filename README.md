@@ -5,7 +5,7 @@ The goal of this project is to analyze disaster data from Figure Eight to build 
 
 ### Project Components
 1. ETL Pipeline
-~process_data.py~, a data cleaning pipeline that:
+'process_data.py', a data cleaning pipeline that:
    * Loads the messages and categories datasets 'disaster_messages.csv' & 'disaster_categories.csv'
    * Merges the two datasets
    * Cleans the data
